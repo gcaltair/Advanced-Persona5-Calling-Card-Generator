@@ -66,11 +66,12 @@
     <hr>
 
     <!-- Editor -->
-    <div id="editor">
-
+    <div id="editor">   
         <div id="content">
-            <label for="content">What do you want to write on the calling card?</label>
-            <textarea name="content" cols="30" rows="6" placeholder="TAKE YOUR HEART"></textarea>
+            <!-- <label for="recipent_content">Who do you want to sent to?</label>
+            <textarea name="recipent_content" cols="30" rows="3"></textarea> -->
+            <label for="text_content">What do you want to write on the calling card?</label>
+            <textarea name="text_content" cols="30" rows="6" placeholder="TAKE YOUR HEART"></textarea>
             <p>Make a new line by pressing Enter/Return on your keyboard.</p>
         </div>
 
@@ -117,13 +118,16 @@
             <div class="options-tab" id="fonts">
                 <h2>Fonts</h2>
                 <div id="font-options">
-                    <label for="font-family">Set family</label>
+
+                    <!-- 注释掉选择字体部分 -->
+                    <!-- <label for="font-family">Set family</label>
                     <input type="text" name="font-family" id="font-family" value="sans-serif" placeholder="sans-serif"
-                        style="font-family:sans-serif">
-                    <label for="font-size">with size of</label>
-                    <input type="number" name="font-size" id="font-size" min="80" max="240" value="120" step="2"
-                        onchange="redrawBg()">
-                    px.
+                        style="font-family:sans-serif"> -->
+                    <label for="font-size">Size of the font is </label>
+                    <input type="range" name="font-size" id="font-size" min="40" max="240" value="80" step="2"
+                        oninput="document.getElementById('font-size-value').textContent = this.value;"
+                        onchange="redrawBg(); redrawText();">
+                    <span id="font-size-value">80</span> px.
                 </div>
             </div>
 
@@ -133,7 +137,7 @@
                 <div id="stroke">
                     <label class="cb-container">
                         <input type="checkbox" name="stroke" onclick="textStroke=this.checked" onchange="redrawText()"
-                            checked>
+                            >
                         <span class="checkmark"></span>Stroke text
                     </label>
 

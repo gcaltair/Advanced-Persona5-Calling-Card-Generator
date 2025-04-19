@@ -1,138 +1,233 @@
 class BoxText {
-  chars = [];
-  fontSize = 120;
-  fontFamily = "sans-serif";
-  gutter = 5;
-  pendding = 30;
-  constructor(t, e = {}) {
-    if (e) {
-      const { fontSize: t, fontFamily: o, gutter: i, pendding: a } = e;
-      t && (this.fontSize = t),
-        o && (this.fontFamily = o),
-        i && (this.gutter = i),
-        a && (this.pendding = a);
+  characters = [];          // 存储字符数组
+  fontSize = 80;           // 字体大小
+  fontFamily = "sans-serif";  // 默认字体族
+  characterSpacing = 5;    // 字符间距
+  padding = 30;           // 内边距
+
+  // 风格差异更大的中文字体
+  fontFamilies = [
+    // 现代风格字体
+    "Microsoft YaHei",     // 微软雅黑：现代无衬线字体，清晰易读，适合标题和正文
+    "SimHei",             // 黑体：粗体无衬线字体，醒目有力，适合强调和标题
+    
+    // 传统风格字体
+    "SimSun",             // 宋体：传统衬线字体，正式典雅，适合正文
+    "FangSong",           // 仿宋：传统衬线字体，古朴典雅，适合正式场合
+    "STSong",             // 华文宋体：传统衬线字体，适合正文
+    "STFangsong",         // 华文仿宋：传统衬线字体，适合正式文档
+    "STZhongsong",        // 华文中宋：传统风格，适合正式场合
+    
+    // 书法风格字体
+    "KaiTi",              // 楷体：楷书风格，优雅流畅，适合艺术效果
+    "STKaiti",            // 华文楷体：楷书风格，适合艺术效果
+    "STXingkai",          // 华文行楷：行书风格，流畅自然，适合艺术效果
+    "STLiti",             // 华文隶书：隶书风格，古朴典雅，适合传统风格
+    "LiSu",               // 隶书：传统隶书，适合传统风格
+    
+    // 艺术字体
+    //"STHupo",             // 华文琥珀：艺术字体，有立体感，适合装饰效果
+    "STXinwei",           // 华文新魏：魏碑风格，有雕刻感，适合艺术效果
+    //"STCaiyun",           // 华文彩云：艺术字体，有云纹效果，适合装饰效果
+    "YouYuan"             // 幼圆：圆润可爱的风格，适合活泼内容
+  ];
+
+  getRandomColors() {
+    const grayValue = Math.floor(Math.random() * 255);
+    
+    const textColor = grayValue < 128 ? 'rgb(255, 255, 255)' : 'rgb(0, 0, 0)';
+    const backgroundColor = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+    
+    return {
+      background: backgroundColor,
+      text: textColor
+    };
+  }
+
+  getRandomFont() {
+    const randomIndex = Math.floor(Math.random() * this.fontFamilies.length);
+    return this.fontFamilies[randomIndex];
+  }
+
+  constructor(text, options = {}) {
+    if (options) {
+      const { 
+        fontSize: newFontSize, 
+        fontFamily: newFontFamily, 
+        gutter: newGutter, 
+        pendding: newPadding,
+        fontFamilies: customFontFamilies
+      } = options;
+      
+      newFontSize && (this.fontSize = newFontSize);
+      newFontFamily && (this.fontFamily = newFontFamily);
+      newGutter && (this.characterSpacing = newGutter);
+      newPadding && (this.padding = newPadding);
+      customFontFamilies && (this.fontFamilies = customFontFamilies);
     }
-    t || console.error("Must set text.");
-    const o = t.split(""),
-      i = new Array(o.length).fill(CHAR_MODE.WHITE);
-    i[0] = CHAR_MODE.FIRST;
-    for (let t = 1; t < o.length; t += 5)
-      for (let e = t; e < t + 5 - 1 && e < o.length; ++e)
+    if (!text) {
+      console.error("必须设置文本内容");
+      return;
+    }
+    const textChars = text.split("");
+    const charModes = new Array(textChars.length).fill(CHAR_MODE.WHITE);
+    
+    charModes[0] = CHAR_MODE.FIRST;
+    
+    for (let i = 1; i < textChars.length; i += 5) {
+      for (let j = i; j < i + 5 - 1 && j < textChars.length; ++j) {
         if (10 * Math.random() > 6) {
-          i[e] = CHAR_MODE.RED;
+          charModes[j] = CHAR_MODE.RED;
           break;
         }
-    for (const [t, e] of o.entries())
-      /^\s$/.test(e)
-        ? this.chars.push(new BoxChar("", CHAR_MODE.SPACE))
-        : this.chars.push(new BoxChar(e, i[t], this.fontSize, this.fontFamily));
+      }
+    }
+    
+    for (const [index, char] of textChars.entries()) {
+      if (/^\s$/.test(char)) {
+        this.characters.push(new BoxChar("", CHAR_MODE.SPACE));
+      } else {
+        const selectedFont = this.getRandomFont();
+        
+        this.characters.push(new BoxChar(
+          char, 
+          charModes[index], 
+          this.fontSize, 
+          selectedFont
+        ));
+      }
+    }
   }
-  draw(t) {
-    const e = t.getContext("2d", { willReadFrequently: true });
-    if (!e)
-      return void console.error("[BoxText.call::draw()] Failed to load canvas");
-    e.clearRect(0, 0, t.width, t.height);
-    const o = this.pendding,
-      i = this.gutter;
-    let a = 2 * o,
-      n = 0;
-    for (const t of this.chars)
-      if (t instanceof BoxChar) {
-        const e = t.outterSize;
-        (a += e.width + i), (n = Math.max(n, e.height));
-      } else a += 2 * i;
-    const s = document.querySelector("#text-align");
-    let l = 0;
-    "center" === s.value && (l = (t.width - a) / 2),
-      "right" === s.value && (l = t.width - a);
-    let r = o + l;
-    (n += 2 * o),
-      (e.fillStyle = COLORS.WHITE),
-      (e.textBaseline = "top"),
-      (e.textAlign = "left");
-    for (const t of this.chars) {
-      if (t.mode == CHAR_MODE.SPACE) {
-        r += 2 * i;
+  draw(canvas) {
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context) {
+      console.error("[BoxText.call::draw()] 无法加载画布上下文");
+      return;
+    }
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const padding = this.padding;
+    const spacing = this.characterSpacing;
+    let totalWidth = 2 * padding;
+    let maxHeight = 0;
+
+    for (const char of this.characters) {
+      if (char instanceof BoxChar) {
+        const size = char.outterSize;
+        totalWidth += size.width + spacing;
+        maxHeight = Math.max(maxHeight, size.height);
+      } else {
+        totalWidth += 2 * spacing;
+      }
+    }
+
+    const alignSelect = document.querySelector("#text-align");
+    let startX = 0;
+    if (alignSelect.value === "center") {
+      startX = (canvas.width - totalWidth) / 2;
+    } else if (alignSelect.value === "right") {
+      startX = canvas.width - totalWidth;
+    }
+
+    let currentX = padding + startX;
+    maxHeight += 2 * padding;
+
+    context.fillStyle = COLORS.WHITE;
+    context.textBaseline = "top";
+    context.textAlign = "left";
+
+    for (const char of this.characters) {
+      if (char.mode === CHAR_MODE.SPACE) {
+        currentX += 2 * spacing;
         continue;
       }
-      e.save();
-      let {
-        char: a,
-        top: s,
-        left: l,
-        width: h,
-        height: f,
-        angle: c,
-        mode: d,
-        color: g,
-      } = t;
-      if (d == CHAR_MODE.FIRST) {
-        const { width: d, height: S } = t.outterSize,
-          C = r + d / 2,
-          u = o + S / 2;
-        rotateCanvas(e, c - 5, C, u),
-          (e.fillStyle = COLORS.BLACK),
-          e.fillRect(r, (n - S) / 2, d, S),
-          rotateCanvas(e, c + 3, C, u);
-        const R = 0.85,
-          w = d * R,
-          x = S * R,
-          O = r + (d - w) / 2,
-          m = (n - x) / 2;
-        (e.fillStyle = COLORS.RED),
-          e.fillRect(O, m, w, x),
-          rotateCanvas(e, c + 2, C, u);
-        const v = r + (d - h) / 2 - l,
-          p = (n - f) / 2 - s;
-        (e.fillStyle = g),
-          (e.font = t.font),
-          e.fillText(a, v, p),
-          (r += t.outterSize.width + i);
+
+      context.save();
+      
+      const {
+        char: character,
+        top: offsetTop,
+        left: offsetLeft,
+        width: charWidth,
+        height: charHeight,
+        angle: rotation,
+        mode: charMode,
+        color: charColor,
+      } = char;
+
+      if (charMode === CHAR_MODE.FIRST) {
+        const { width: outerWidth, height: outerHeight } = char.outterSize;
+        const centerX = currentX + outerWidth / 2;
+        const centerY = padding + outerHeight / 2;
+
+        const colors = this.getRandomColors();
+        rotateCanvas(context, rotation - 5, centerX, centerY);
+        context.fillStyle = colors.background;
+        context.fillRect(currentX, (maxHeight - outerHeight) / 2, outerWidth, outerHeight);
+
+        rotateCanvas(context, rotation + 2, centerX, centerY);
+        const charX = currentX + (outerWidth - charWidth) / 2 - offsetLeft;
+        const charY = (maxHeight - charHeight) / 2 - offsetTop;
+        context.fillStyle = colors.text;
+        context.font = char.font;
+        context.fillText(character, charX, charY);
+
+        currentX += char.outterSize.width + spacing;
       } else {
-        const { width: d, height: S } = t.outterSize,
-          C = r + d / 2,
-          u = o + S / 2;
-        rotateCanvas(e, c + 1, C, u),
-          (e.fillStyle = COLORS.BLACK),
-          e.fillRect(r, (n - S) / 2, d, S);
-        const R = r + (d - h) / 2 - l,
-          w = (n - f) / 2 - s;
-        rotateCanvas(e, -1, C, u),
-          (e.fillStyle = g),
-          (e.font = t.font),
-          e.fillText(a, R, w),
-          (r += t.outterSize.width + i);
+        const { width: outerWidth, height: outerHeight } = char.outterSize;
+        const centerX = currentX + outerWidth / 2;
+        const centerY = padding + outerHeight / 2;
+
+        const colors = this.getRandomColors();
+        rotateCanvas(context, rotation + 1, centerX, centerY);
+        context.fillStyle = colors.background;
+        context.fillRect(currentX, (maxHeight - outerHeight) / 2, outerWidth, outerHeight);
+
+        const charX = currentX + (outerWidth - charWidth) / 2 - offsetLeft;
+        const charY = (maxHeight - charHeight) / 2 - offsetTop;
+        rotateCanvas(context, -1, centerX, centerY);
+        context.fillStyle = colors.text;
+        context.font = char.font;
+        context.fillText(character, charX, charY);
+
+        currentX += char.outterSize.width + spacing;
       }
-      e.restore();
+
+      context.restore();
     }
-    const h = e.getImageData(0, 0, 1770, 1300),
-      f = e.createImageData(1770, 1300);
+
     if (textStroke) {
-      const t = parseInt(textStrokeWidth),
-        e = Math.floor(t / 2);
-      for (let o = e; o < h.height - e; ++o)
-        for (let i = e; i < h.width - e; ++i) {
-          const e = o * h.width * 4 + 4 * i;
-          if (!h.data[e + 3]) continue;
-          const a = h.data[e + 3];
-          for (let e = o - t + 1; e < o + t; ++e)
-            for (let o = i - t + 1; o < i + t; ++o) {
-              const t = e * h.width * 4 + 4 * o;
-              (f.data[t] = 255),
-                (f.data[t + 1] = 255),
-                (f.data[t + 2] = 255),
-                (f.data[t + 3] += a / 4);
+      const strokeWidth = parseInt(textStrokeWidth);
+      const halfStroke = Math.floor(strokeWidth / 2);
+      const imageData = context.getImageData(0, 0, 1770, 1300);
+      const strokeData = context.createImageData(1770, 1300);
+
+      for (let y = halfStroke; y < imageData.height - halfStroke; ++y) {
+        for (let x = halfStroke; x < imageData.width - halfStroke; ++x) {
+          const pixelIndex = y * imageData.width * 4 + 4 * x;
+          if (!imageData.data[pixelIndex + 3]) continue;
+          
+          const alpha = imageData.data[pixelIndex + 3];
+          for (let strokeY = y - strokeWidth + 1; strokeY < y + strokeWidth; ++strokeY) {
+            for (let strokeX = x - strokeWidth + 1; strokeX < x + strokeWidth; ++strokeX) {
+              const strokePixelIndex = strokeY * imageData.width * 4 + 4 * strokeX;
+              strokeData.data[strokePixelIndex] = 255;
+              strokeData.data[strokePixelIndex + 1] = 255;
+              strokeData.data[strokePixelIndex + 2] = 255;
+              strokeData.data[strokePixelIndex + 3] += alpha / 4;
             }
+          }
         }
+      }
+
+      const { canvas: strokeCanvas, context: strokeContext } = letterCanvas(1770, 1300);
+      strokeContext.putImageData(strokeData, 0, 0);
+      context.save();
+      context.globalCompositeOperation = "destination-over";
+      context.drawImage(strokeCanvas, 0, 0);
+      context.restore();
     }
-    const { canvas: c, context: d } = letterCanvas(1770, 1300);
-    return (
-      d.putImageData(f, 0, 0),
-      e.save(),
-      (e.globalCompositeOperation = "destination-over"),
-      e.drawImage(c, 0, 0),
-      e.restore(),
-      n
-    );
+
+    return maxHeight;
   }
 }

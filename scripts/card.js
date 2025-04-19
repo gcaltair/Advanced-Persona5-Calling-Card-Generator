@@ -44,9 +44,12 @@ function redrawBg() {
 }
 
 // for the text canvas
+const recipentInput=document.querySelector('#recipent_content > textarea');
+
 const textInput = document.querySelector('#content > textarea');
 const fontSizeInput = document.querySelector('#font-size');
-const fontFamilyInput = document.querySelector('#font-family');
+//注释掉字体选择
+//const fontFamilyInput = document.querySelector('#font-family');
 
 const lineCanvas = document.createElement('canvas');
 
@@ -55,10 +58,12 @@ const textCtx = canvasText.getContext('2d');
 let box;
 
 function redrawText() {
+    const default_text='色欲之无耻混蛋，鸭志田卓先生，\n你将扭曲的欲望加诸于无法抵抗的学生身上，\n我们已经非常了解你的所作所为\n有多么的令人发指，\n所以，我们决定偷走你那扭曲的欲望，\n让你自行坦诚罪行，\n明天就解决你，做好心理准备吧。';
     const delay = Number(document.querySelector('#delay-rate > input[type="number"]').value);
-    const fontSize = Math.min(Math.abs(+fontSizeInput.value || 120));
-    const fontFamily = fontFamilyInput.value || 'sans-serif';
-    const value = (textInput.value || 'TAKE YOUR HEART').trim();
+    const fontSize = Math.min(Math.abs(+fontSizeInput.value || 80));
+    //const fontFamily = fontFamilyInput.value || 'sans-serif';
+    const fontFamily='sans-serif';
+    const value = (textInput.value || default_text).trim();
     const splitValue = value.split('\n');
     
     console.log(`[call::redrawText()] textInput:${value}`);

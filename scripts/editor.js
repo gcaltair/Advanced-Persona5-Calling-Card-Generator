@@ -2,7 +2,7 @@
 var showLogo = true, 
     showWtm = false, 
     isMiddle = true, 
-    textStroke = true,
+    textStroke = false,
     textStrokeWidth = 6;
     
 // delay function
